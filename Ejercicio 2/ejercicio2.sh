@@ -40,67 +40,40 @@ fi
 return
 }
 
-upperCase(){
-	IFS="#!"
-	cadena=(`echo "$1" | tr [:lower:] [:upper:]`)
-	IFS=" "
-}
-lowerCase(){
-	IFS="#!"
-	cadena=(`echo "$1" | tr [:upper:] [:lower:]`)
-	IFS=" "
+
+validarFormato(){
+	OIFS='$IFS'
+	IFS=' '
+	nombreJugador=""
+	read -a lineaParseada <<< "{$1}"
+	echo "${#lineaParseada[@]}"
+	for (( i = 1; i < "${#lineaParseada[@]}"-1; i++ )); 
+	do
+		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
+	done
+	echo "Esto era un ejemplo"
+	echo $nombreJugador
+	IFS="$OIFS"
 }
 
-archivoIgnorar(){
-	declare -A array
-	#voy leyendo las lineas y en caso de haber coincidencia las empiezo a incrementar
-	IFS='\'	
-	while read linea
-	do
-		#llamo a esta funcion que las pasa magicamente a mayuscula
-		upperCase "$linea"
-		#Si el esa posición del array esta vacía, significa que no hay absolutamente una linea hasta ese momento y la pone en cero. Porque sino, produce error
-		if [ "${array["$cadena"]}" = "" ]
-		then
-		array["$cadena"]="0"
-		fi
-	((array["$cadena"]=${array[$cadena]}+1))
-	done < "$1"
-	for k in "${!array[@]}"
-	do
-		echo ${array["$k"]}'.'$k  
-	done | sort -k1,1nr -k2,2	 
-IFS=" "
-}
 
-archivoSinIgnorar(){
-declare -A array
-declare -a arrayPalabra
-declare -a arrayNumeros
+trabajarArchivo(){
+
+#Declaro un array asociativo
+declare -a lineaParseada
+declare -A jugadoresYGoles
+nombreJugador
+IFS="°"
 while read linea
 do
-	if [ "${array[$linea]}" = "" ]
-	then
-	array["$linea"]="0"
-	fi
-	((array["$linea"]=${array[$linea]}+1))
+	echo $linea
+	validarFormato $linea
+#	if [ "${array[$linea]}" = "" ]
+#	then
+#	array["$linea"]="0"
+#	fi
+#	((array["$linea"]=${array[$linea]}+1))
 done < "$1"
-
-declare -a arrayNumerico
-declare -a arrayPalabras
-i=0
-	for k in "${!array[@]}"
-	do
-		arrayPalabras["$i"]=$k  
-		((arrayNumerico["$i"]=${array["$k"]}))
-		((i++))
-	done
-	declare -i longitud
-	ordenar
-	for((i=0;i<longitud;i++))
-	do
-		echo ${arrayNumerico["$i"]} "...." ${arrayPalabras["$i"]}
-	done
 }
 
 ordenar(){
@@ -148,16 +121,15 @@ case $# in
 1)
 	comprobarAyuda "$1"
 	verificarPermisosDeLectura "$1"
-	archivoSinIgnorar "$1"
+	trabajarArchivo "$1"
 	;;
 2)
 	case "$2" in
 	"-i") 	verificarPermisosDeLectura "$1"
-			archivoIgnorar "$1"
+			verificarPermisosDeLectura "$2"
+			pathSalida=$2
+			trabajarArchivo "$1"
 	;;
-	"-ni") 	verificarPermisosDeLectura "$1"
-			archivoSinIgnorar "$1"
-		;;
 *)
 	mensajeError "Error en el segundo parametro utilice el help [-h]"
 	;;
