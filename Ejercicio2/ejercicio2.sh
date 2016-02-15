@@ -46,34 +46,45 @@ validarFormato(){
 	IFS=' '
 	nombreJugador=""
 	read -a lineaParseada <<< "{$1}"
-	echo "${#lineaParseada[@]}"
-	for (( i = 1; i < "${#lineaParseada[@]}"-1; i++ )); 
+	#echo "${#lineaParseada[@]}"
+	for (( i = 1; i < ${#lineaParseada[@]}-1; i++ )); 
 	do
 		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
 	done
 	echo "Esto era un ejemplo"
 	echo $nombreJugador
+	goles= ${lineaParseada["$i"]}
 	IFS="$OIFS"
 }
 
 
 trabajarArchivo(){
-
 #Declaro un array asociativo
 declare -a lineaParseada
 declare -A jugadoresYGoles
-nombreJugador
-IFS="°"
+declare -i goles
+declare -i bandera
+bandera=0
+IFS='|'
 while read linea
 do
-	echo $linea
-	validarFormato $linea
-#	if [ "${array[$linea]}" = "" ]
-#	then
-#	array["$linea"]="0"
-#	fi
-#	((array["$linea"]=${array[$linea]}+1))
+	if [[ bandera -ne 0 ]]
+	then
+		nombreJugador=""
+		echo $linea
+		validarFormato $linea
+		if [ ${jugadoresYGoles["$nombreJugador"]} = "" ]
+		then
+			jugadoresYGoles["$nombreJugador"]="0"
+		fi
+		((jugadoresYGoles["$nombreJugador"]=${jugadoresYGoles["$nombreJugador"]}+$goles))
+	else
+		bandera=1
+	fi
+
 done < "$1"
+
+
 }
 
 ordenar(){
@@ -107,11 +118,23 @@ ordenar(){
 	done
 }
 verificarPermisosDeLectura(){
-	if [ ! -r $1 ]
+	if [ ! -r "$1" ]
 	then 
 	echo "$1 no tiene permisos de lectura, por favor verifique los permisos y cambielos en caso de que sea deseado ser procesado ese archivo"
 	exit
 	fi
+}
+
+verificarPermisosDeEscritura(){
+	
+	
+	if [ ! -w "$1" ]
+	then
+		echo "No tengo permisos para escribir en $1"
+		IFS="$OIFS"
+		exit
+	fi
+	
 }
 
 # *******************************FINALIZA EL BLOQUE DE FUNCIONES
@@ -119,8 +142,13 @@ verificarPermisosDeLectura(){
 #PREGUNTO SI SE PASO MINIMAMENTE UN PARAMETRO
 case $# in
 1)
+
 	comprobarAyuda "$1"
 	verificarPermisosDeLectura "$1"
+	OIFS="$IFS"
+	IFS=";"
+	verificarPermisosDeEscritura `pwd`
+	IFS="$OIFS"
 	trabajarArchivo "$1"
 	;;
 2)
