@@ -46,13 +46,12 @@ validarFormato(){
 	IFS=' '
 	nombreJugador=""
 	read -a lineaParseada <<< "$1"
-	declare -i i=1
+	nombreJugador="${lineaParseada[1]}"
+	declare -i i=2
 	for (( i ; i < ${#lineaParseada[@]}-1; i++ )); 
 	do
 		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
 	done
-	echo  " Este es el nombre del jugador $nombreJugador"
-
 	((ultimoElemento=${#lineaParseada[@]}-1))
 	goles="${lineaParseada[$i]}"
 	IFS="$OIFS"
@@ -65,13 +64,12 @@ declare -A jugadoresYGoles
 declare -i goles
 declare -i bandera
 bandera=0
-IFS='|'
+IFS='_'
 while read linea
 do
+	nombreJugador=""
 	if [[ bandera -ne 0 ]]
 	then
-		nombreJugador=""
-		echo $linea
 		validarFormato $linea
 		if [ "${jugadoresYGoles["$nombreJugador"]}" = "" ]
 		then
@@ -95,8 +93,9 @@ i=0
 	ordenar
 	if [ "$pathSalida" = "" ]
 	then
-		pathSalida=´pwd´"JugadoresTorneo_salida.txt"
+		pathSalida="JugadoresTorneo_salida.txt"
 	fi
+	echo "Jugador          Goles" > $pathSalida
 	for((i=0;i<longitud;i++))
 	do
 		echo  ${arrayPalabras["$i"]} ${arrayNumerico["$i"]} >> $pathSalida
@@ -142,15 +141,12 @@ verificarPermisosDeLectura(){
 }
 
 verificarPermisosDeEscritura(){
-	
-	
-	if [ ! -w "$1" ]
-	then
-		echo "No tengo permisos para escribir en $1"
-		IFS="$OIFS"
-		exit
-	fi
-	
+if [ ! -w "$1" ]
+then
+	echo "No tengo permisos para escribir en $1"
+	IFS="$OIFS"
+	exit
+fi
 }
 
 # *******************************FINALIZA EL BLOQUE DE FUNCIONES
@@ -169,14 +165,9 @@ case $# in
 	;;
 3)
  	verificarPermisosDeLectura "$1"
-	verificarPermisosDeEscritura "$2"
-	pathSalida=$2$3
+	verificarPermisosDeEscritura "$2/"
+	pathSalida=$2"/"$3
 	trabajarArchivo "$1"
-	;;
-*)
-	mensajeError "Error en el segundo parametro utilice el help [-h]"
-	;;
-esac
 ;;
 *)
 scriptErrorParametro
