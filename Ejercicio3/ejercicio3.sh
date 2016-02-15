@@ -45,13 +45,13 @@ verificarFecha(){
 			echo "Error de formato de fecha. Vea la ayuda"
 			MostrarAyuda
 		else
-			if [[ ${ADDR[0]} =~ ^[0-9][0-9]$ ]]; then
+			if [[ ${ADDR[0]} -lt 31 && ${ADDR[0]} =~ ^[0-9][0-9]$ ]]; then
 				fecha+="${ADDR[0]}/"
 			else
 				echo "Error de formato de fecha. Vea la ayuda"
 				MostrarAyuda
 			fi
-			if [[ ${ADDR[1]} =~ ^[0-9][0-9]$ && ${ADDR[1]} ]]; then
+			if [[ ${ADDR[1]} < 12 && ${ADDR[1]} > 0 && ${ADDR[1]} =~ ^[0-9][0-9]$ && ${ADDR[1]} ]]; then
 				fecha+="${ADDR[1]}/"
 			else
 				echo "Error de formato de fecha. Vea la ayuda"
