@@ -135,8 +135,8 @@ ordenar(){
 verificarPermisosDeLectura(){
 	if [ ! -r "$1" ]
 	then 
-	echo "$1 no tiene permisos de lectura, por favor verifique los permisos y cambielos en caso de que sea deseado ser procesado ese archivo"
-	exit
+		echo "No tengo permisos de lectura sobre $1, por favor verifique los permisos y cambielos en caso de que sea deseado ser procesado este archivo"
+		exit
 	fi
 }
 
