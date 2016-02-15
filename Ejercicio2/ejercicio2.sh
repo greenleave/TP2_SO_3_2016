@@ -45,21 +45,21 @@ validarFormato(){
 	OIFS='$IFS'
 	IFS=' '
 	nombreJugador=""
-	read -a lineaParseada <<< "{$1}"
-	#echo "${#lineaParseada[@]}"
-	for (( i = 1; i < ${#lineaParseada[@]}-1; i++ )); 
+	read -a lineaParseada <<< "$1"
+	declare -i i=1
+	for (( i ; i < ${#lineaParseada[@]}-1; i++ )); 
 	do
 		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
 	done
-	echo "Esto era un ejemplo"
-	echo $nombreJugador
-	goles= ${lineaParseada["$i"]}
+	echo  " Este es el nombre del jugador $nombreJugador"
+
+	((ultimoElemento=${#lineaParseada[@]}-1))
+	goles="${lineaParseada[$i]}"
 	IFS="$OIFS"
 }
 
 
 trabajarArchivo(){
-#Declaro un array asociativo
 declare -a lineaParseada
 declare -A jugadoresYGoles
 declare -i goles
@@ -73,18 +73,34 @@ do
 		nombreJugador=""
 		echo $linea
 		validarFormato $linea
-		if [ ${jugadoresYGoles["$nombreJugador"]} = "" ]
+		if [ "${jugadoresYGoles["$nombreJugador"]}" = "" ]
 		then
 			jugadoresYGoles["$nombreJugador"]="0"
 		fi
-		((jugadoresYGoles["$nombreJugador"]=${jugadoresYGoles["$nombreJugador"]}+$goles))
+		((jugadoresYGoles["$nombreJugador"]+=$goles))
 	else
 		bandera=1
 	fi
-
 done < "$1"
-
-
+declare -a arrayNumerico
+declare -a arrayPalabras
+i=0
+	for k in "${!jugadoresYGoles[@]}"
+	do
+		arrayPalabras["$i"]=$k  
+		((arrayNumerico["$i"]=${jugadoresYGoles["$k"]}))
+		((i++))
+	done
+	declare -i longitud
+	ordenar
+	if [ "$pathSalida" = "" ]
+	then
+		pathSalida=´pwd´"JugadoresTorneo_salida.txt"
+	fi
+	for((i=0;i<longitud;i++))
+	do
+		echo  ${arrayPalabras["$i"]} ${arrayNumerico["$i"]} >> $pathSalida
+	done
 }
 
 ordenar(){
@@ -151,12 +167,11 @@ case $# in
 	IFS="$OIFS"
 	trabajarArchivo "$1"
 	;;
-2)
-	case "$2" in
-	"-i") 	verificarPermisosDeLectura "$1"
-			verificarPermisosDeLectura "$2"
-			pathSalida=$2
-			trabajarArchivo "$1"
+3)
+ 	verificarPermisosDeLectura "$1"
+	verificarPermisosDeEscritura "$2"
+	pathSalida=$2$3
+	trabajarArchivo "$1"
 	;;
 *)
 	mensajeError "Error en el segundo parametro utilice el help [-h]"
