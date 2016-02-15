@@ -131,8 +131,7 @@ verificarArchivo(){
 }
 
 fecha=""
-case $#
-
+case $# in
 	1)
 		comprobarAyuda "$1"
 		fecha=`date +%d/%m/%Y`
