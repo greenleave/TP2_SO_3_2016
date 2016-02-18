@@ -46,8 +46,8 @@ validarFormato(){
 	#Cambio la variable ifs y lo pongo en una variable auxiliar
 	OIFS='$IFS'
 	IFS=" "
+	lineaParseada=(`echo $1 | tr '.' "$2"`)
 	nombreJugador=""
-	read -r -a lineaParseada <<< "$1"
 	IFS="$OIFS"
 	declare -i i=2
 	for (( i=1 ; i < ${#lineaParseada[@]}-1; i++ )); 
@@ -57,10 +57,6 @@ validarFormato(){
 	((ultimoElemento=${#lineaParseada[@]}-1))
 	goles=$ultimoElemento
 }
-
-#foo='1.2.3.4'
-#bar=(`echo $foo | tr '.' ' '`)
-#echo ${bar[1]}
 
 
 trabajarArchivo(){
