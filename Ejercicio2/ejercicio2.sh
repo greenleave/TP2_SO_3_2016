@@ -1,4 +1,4 @@
-#!/bin/bash
+	#!/bin/bash
 
 # *******************************COMIENZA EL BLOQUE DE FUNCIONES
 # ACLARACIONES ·$1 ES EL PRIMER PARAMETRO QUE SE PASA, SEA A LA FUNCION O A LA LLAMADA DEL ARCHIVO BASH
@@ -7,7 +7,7 @@
 # -r si se puede leer... comprobar eso.
 scriptErrorParametro(){
 
-echo "Debe ingresar aunque sea un parametro. Para mas informacion, utilice el help."
+echo "$1 Para mas informacion, utilice el help."
 echo "Por ejemplo"
 echo "bash ejercicio2.sh -h"
 echo "bash ejercicio2.sh -help"
@@ -17,7 +17,7 @@ ofrecerAyuda(){
 
 echo "Debe pasarse como parametro el nombre del directorio de entrada y el de salida. Debe escapearse los espacios de la siguiente forma: '\ '"
 echo "Para ejecutar correctamente, debe ingresar con el siguiente formato"
-echo "bash script.sh [archivo de entrada] [-i o -ni]"
+echo "bash script.sh [archivo de entrada] [path de salida] [nombre del archivo]"
 echo ""
 echo ""
 echo ""
@@ -41,36 +41,65 @@ return
 }
 
 
+
 validarFormato(){
+	#Cambio la variable ifs y lo pongo en una variable auxiliar
 	OIFS='$IFS'
-	IFS=' '
+	IFS=" "
 	nombreJugador=""
-	read -a lineaParseada <<< "$1"
-	nombreJugador="${lineaParseada[1]}"
+	read -r -a lineaParseada <<< "$1"
+	IFS="$OIFS"
 	declare -i i=2
-	for (( i ; i < ${#lineaParseada[@]}-1; i++ )); 
+	for (( i=1 ; i < ${#lineaParseada[@]}-1; i++ )); 
 	do
 		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
 	done
 	((ultimoElemento=${#lineaParseada[@]}-1))
-	goles="${lineaParseada[$i]}"
-	IFS="$OIFS"
+	goles=$ultimoElemento
 }
+
+#foo='1.2.3.4'
+#bar=(`echo $foo | tr '.' ' '`)
+#echo ${bar[1]}
 
 
 trabajarArchivo(){
+#Declaro un array comun
 declare -a lineaParseada
+#Declaro un array asociativo
 declare -A jugadoresYGoles
+#declaro un entero
 declare -i goles
+#declaro una bandera y la inicializo
 declare -i bandera
 bandera=0
-IFS='_'
+#Cambio el IFS para que me tome la cadena completa y comienzo a leer el archivo
+IFS=';'
 while read linea
 do
-	nombreJugador=""
+	#Si la bandera esta en cero significa que todavia no se paso la linea del encabezado
 	if [[ bandera -ne 0 ]]
-	then
-		validarFormato $linea
+	then		
+		#Cambio la variable ifs y lo pongo en una variable auxiliar
+		OIFS='$IFS'
+		IFS=" "
+		#Inicializo el nombre del jugador
+		nombreJugador=""
+		#Parseo la linea
+		read -r -a lineaParseada <<< "$linea"
+		IFS="$OIFS"
+		#Declaro i como entero y tiene el valor de 1 y concateno los elementos
+		declare -i i=1
+		for (( i ; i < ${#lineaParseada[@]}-1; i++ )); 
+		do
+			nombreJugador="$nombreJugador ${lineaParseada[$i]}"
+			echo $nombreJugador
+		done
+
+		#El ultimo elemento, deberia ser goles
+		((ultimoElemento=${#lineaParseada[@]}-1))
+		goles=$ultimoElemento
+		IFS="$OIFS"
 		if [ "${jugadoresYGoles["$nombreJugador"]}" = "" ]
 		then
 			jugadoresYGoles["$nombreJugador"]="0"
@@ -95,7 +124,7 @@ i=0
 	then
 		pathSalida="JugadoresTorneo_salida.txt"
 	fi
-	echo "Jugador          Goles" > $pathSalida
+	echo "Jugador                 Goles" > $pathSalida
 	for((i=0;i<longitud;i++))
 	do
 		echo  ${arrayPalabras["$i"]} ${arrayNumerico["$i"]} >> $pathSalida
@@ -132,6 +161,9 @@ ordenar(){
 		arrayPalabras["$posMax"]=$auxiliarPalabra
 	done
 }
+
+
+
 verificarPermisosDeLectura(){
 	if [ ! -r "$1" ]
 	then 
@@ -153,6 +185,10 @@ fi
 # *******************************COMIENZA EL BLOQUE DEL PROGRAMA
 #PREGUNTO SI SE PASO MINIMAMENTE UN PARAMETRO
 case $# in
+0)
+	scriptErrorParametro "Por lo menos se le debe pasar un parametro al script para mas informacion consulte el help"
+	exit
+;;
 1)
 
 	comprobarAyuda "$1"
@@ -163,13 +199,22 @@ case $# in
 	IFS="$OIFS"
 	trabajarArchivo "$1"
 	;;
+2)
+	scriptErrorParametro "Por lo menos se le debe pasar un parametro al script para mas informacion consulte el help"
+	exit
+;;
 3)
  	verificarPermisosDeLectura "$1"
 	verificarPermisosDeEscritura "$2/"
 	pathSalida=$2"/"$3
 	trabajarArchivo "$1"
 ;;
+
+4)
+	echo "Aca deberia ir por los cuatro parametros y que se le pase el separador"
+	exit
+;;
 *)
-scriptErrorParametro
+scriptErrorParametro "Se han pasado mas de cuatro parametros"
 ;;
 esac

@@ -1,0 +1,15 @@
+Jugador                 Goles
+ 	Rey, Juan Cruz 8
+ 	Zapata, Duván Estevan 8
+ 	Gigliotti, Emanuel 6
+ 	Rey, Juan Dgnacio 4
+ 	Ecocco, Egnacio 3
+ 	Gigliotti, Eranco 3
+ 	Heinze, Gabriel 3
+ 	Hola, Mundo 3
+ 	Mansilla, Rodrigo 3
+ 	Nanni, Roberto 3
+ 	Rescaldani, Ezequiel 3
+ 	Riaño, Claudio 3
+ Bogado, Eebastian	 3
+ MiVieja, Mula		 3

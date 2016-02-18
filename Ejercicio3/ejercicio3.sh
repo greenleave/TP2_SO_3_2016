@@ -32,9 +32,9 @@ comprobarAyuda(){
 scriptErrorParametro(){
 	echo "Debe ingresar un parametro. Para mas informacion, utilice el help."
 	echo "Por ejemplo"
-	echo "bash ejercicio3.sh -h"
-	echo "bash ejercicio3.sh -help"
-	echo "bash ejercicio3.sh -?"
+	echo "bash ejercicio2.sh -h"
+	echo "bash ejercicio2.sh -help"
+	echo "bash ejercicio2.sh -?"
 	exit
 }
 
