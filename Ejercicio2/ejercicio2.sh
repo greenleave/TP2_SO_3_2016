@@ -22,18 +22,23 @@ echo ""
 echo ""
 echo ""
 echo "Ejemplos:"
-echo "bash ejercicio2.sh archivito.txt -i"
-echo "en este caso, se ignora si es mayuscula o minuscula"
+echo "bash ejercicio2.sh entrada.txt"
+echo "en este caso, crea en la misma carpeta del script un archivo llamado JugadoresTorneo_salida.txt con la salida del Script"
 echo ""
 echo ""
 echo ""
-echo "bash ejercicio2.sh archivito.txt -ni"
-echo "en este caso, no ignora si es mayuscula o minuscula. Por defecto no se ignoran si son mayusculas o minusculas"
+echo "bash ejercicio2.sh entrada.txt ~/Desktop salida.txt"
+echo "en este caso, crea en la carpeta Desktop el archivo salida.txt con la salida del script, el separador seria el espacio dado que no se especifica ninguno"
+echo ""
+echo ""
+echo ""
+echo "bash ejercicio2.sh entrada.txt ~/Desktop salida.txt ;"
+echo "en este caso, crea en la carpeta Desktop el archivo salida.txt con la salida del script, el separador seria ;"
 exit 0
 }
 
 comprobarAyuda(){
-if [ "$1" = "-help" -o "$1" = "-?" -o "$1" = "-h" ]
+if [ "$1" = "-help" -o "$1" = "--help" -o "$1" = "-?" -o "$1" = "-h" ]
 then
 ofrecerAyuda
 fi
@@ -44,21 +49,23 @@ return
 
 validarFormato(){
 	#Cambio la variable ifs y lo pongo en una variable auxiliar
-	OIFS='$IFS'
-	IFS=" "
-	lineaParseada=(`echo $1 | tr '.' "$2"`)
-	nombreJugador=""
-	IFS="$OIFS"
+	OIFS="$IFS"
+	IFS="$2"
+	lineaParseada=(`echo "$1" | tr '.' "$2"`)
+	echo $2
+	echo "${lineaParseada[1]}"
 	declare -i i=2
 	for (( i=1 ; i < ${#lineaParseada[@]}-1; i++ )); 
 	do
 		nombreJugador="$nombreJugador ${lineaParseada[$i]}"
 	done
+	#El ultimo elemento, deberia ser goles
 	((ultimoElemento=${#lineaParseada[@]}-1))
 	goles=$ultimoElemento
+	IFS="$OIFS"
 }
 
-
+# Le llega como parametro el path del archivo de entrada y el separador
 trabajarArchivo(){
 #Declaro un array comun
 declare -a lineaParseada
@@ -70,32 +77,15 @@ declare -i goles
 declare -i bandera
 bandera=0
 #Cambio el IFS para que me tome la cadena completa y comienzo a leer el archivo
-IFS=';'
 while read linea
 do
 	#Si la bandera esta en cero significa que todavia no se paso la linea del encabezado
 	if [[ bandera -ne 0 ]]
-	then		
-		#Cambio la variable ifs y lo pongo en una variable auxiliar
-		OIFS='$IFS'
-		IFS=" "
-		#Inicializo el nombre del jugador
-		nombreJugador=""
-		#Parseo la linea
-		read -r -a lineaParseada <<< "$linea"
-		IFS="$OIFS"
-		#Declaro i como entero y tiene el valor de 1 y concateno los elementos
-		declare -i i=1
-		for (( i ; i < ${#lineaParseada[@]}-1; i++ )); 
-		do
-			nombreJugador="$nombreJugador ${lineaParseada[$i]}"
-			echo $nombreJugador
-		done
-
-		#El ultimo elemento, deberia ser goles
-		((ultimoElemento=${#lineaParseada[@]}-1))
-		goles=$ultimoElemento
-		IFS="$OIFS"
+	then	
+		nombreJugador=""	
+		#Validar el formato, hace un par de tareas iniciales
+		validarFormato "$linea" "$2"
+		echo "Este es el jugador: $nombreJugador"
 		if [ "${jugadoresYGoles["$nombreJugador"]}" = "" ]
 		then
 			jugadoresYGoles["$nombreJugador"]="0"
@@ -105,9 +95,11 @@ do
 		bandera=1
 	fi
 done < "$1"
+#Declaro array auxiliares.
 declare -a arrayNumerico
 declare -a arrayPalabras
 i=0
+#Empiezo a guardar los datos del array asociativo en array auxiliares.
 	for k in "${!jugadoresYGoles[@]}"
 	do
 		arrayPalabras["$i"]=$k  
@@ -115,6 +107,7 @@ i=0
 		((i++))
 	done
 	declare -i longitud
+	#Mando a ordenar el archivo
 	ordenar
 	if [ "$pathSalida" = "" ]
 	then
@@ -127,6 +120,7 @@ i=0
 	done
 }
 
+#Hago un ordenamiento, no recibe parametros porque estan en las variables globales
 ordenar(){
 	declare -i posMax
 	longitud=${#arrayNumerico[@]}
@@ -176,6 +170,18 @@ then
 	exit
 fi
 }
+verificarSiExisteArchivo(){
+	if [ ! -f "$1" -a ! -d "$1"]
+	then
+		echo "No tengo permisos para escribir en $1"
+			IFS="$OIFS"
+		exit
+	fi
+	if [ ! -d "$1" ]
+	then 
+		echo "El archivo pasado es un directorio"
+	fi
+}
 
 # *******************************FINALIZA EL BLOQUE DE FUNCIONES
 # *******************************COMIENZA EL BLOQUE DEL PROGRAMA
@@ -188,27 +194,32 @@ case $# in
 1)
 
 	comprobarAyuda "$1"
+	verificarSiEsArchivoRegular "$1"
 	verificarPermisosDeLectura "$1"
 	OIFS="$IFS"
 	IFS=";"
 	verificarPermisosDeEscritura `pwd`
 	IFS="$OIFS"
-	trabajarArchivo "$1"
+	trabajarArchivo "$1" " "
 	;;
 2)
-	scriptErrorParametro "Por lo menos se le debe pasar un parametro al script para mas informacion consulte el help"
+	scriptErrorParametro "Por lo menos se le debe pasar un parametro más al script para más informacion consulte el help ejercicio2.sh -h --help o -?"
 	exit
 ;;
 3)
  	verificarPermisosDeLectura "$1"
 	verificarPermisosDeEscritura "$2/"
-	pathSalida=$2"/"$3
-	trabajarArchivo "$1"
+	pathSalida="$2/$3"
+	trabajarArchivo "$1" " "
 ;;
 
 4)
-	echo "Aca deberia ir por los cuatro parametros y que se le pase el separador"
-	exit
+	"Entra en el de 4 parametros"
+	verificarPermisosDeLectura "$1"
+	verificarPermisosDeEscritura "$2/"
+	pathSalida="$2/$3"
+	echo "$4"
+	trabajarArchivo "$1" "$4"
 ;;
 *)
 scriptErrorParametro "Se han pasado mas de cuatro parametros"
